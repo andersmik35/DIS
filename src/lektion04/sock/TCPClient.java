@@ -5,7 +5,16 @@ import java.net.*;
 
 public class TCPClient {
 
+    private Socket connectedTo = null;
+    private BufferedReader inFromServer = null;
+
     public static void main(String argv[]) throws Exception {
+        TCPClient client = new TCPClient();
+        client.startClient();
+    }
+
+    public void startClient() {
+
         String sentence;
         String modifiedSentence;
 
@@ -14,9 +23,9 @@ public class TCPClient {
 
         try {
             BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-            Socket clientSocket = new Socket("10.10.138.188", 6789);
+            Socket clientSocket = new Socket("172.20.10.11", 6969);
             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-            BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
 
             System.out.println("Skriv 'Snakke <Navn>' for at snakke med serveren");
@@ -31,6 +40,8 @@ public class TCPClient {
             }
             System.out.println("Serveren vil gerne snakke med dig");
 
+            listenForMessage();
+
             while (!clientSocket.isClosed()) {
                 sentence = inFromUser.readLine();
                 outToServer.writeBytes(sentence + '\n');
@@ -40,10 +51,23 @@ public class TCPClient {
             clientSocket.close();
 
 
-
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+    }
+
+    public void listenForMessage(){
+        new Thread (() ->{
+            while(true){
+                try{
+                    String message = inFromServer.readLine();
+                    System.out.println("FROM SERVER: " + message);
+                }catch(Exception e){
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+        });
+
     }
 
 
