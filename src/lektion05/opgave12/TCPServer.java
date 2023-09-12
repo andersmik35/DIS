@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class TCPServer {
 	public static void main(String[] args) {
 		try {
-			ServerSocket serverSocket = new ServerSocket(6969);
+			ServerSocket serverSocket = new ServerSocket(6789);
 
 			while (true) {
 				System.out.println("Waiting for a client to connect...");
