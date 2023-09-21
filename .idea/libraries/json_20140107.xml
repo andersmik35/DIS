@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="json-20140107">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../IoT/json-20140107.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../IoT/org.eclipse.paho.client.mqttv3-1.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
