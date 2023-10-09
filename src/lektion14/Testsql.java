@@ -8,7 +8,6 @@ public class Testsql {
     private static Connection minConnection;
 
     public static void main(String[] args) {
-// TODO Auto-generated method stub
         try {
             System.out.println("Program startet");
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
