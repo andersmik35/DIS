@@ -24,7 +24,7 @@ public class SimpleMqttCallBack implements MqttCallback {
         double hum = jsonObject.getJSONObject("AM2301").getDouble("Humidity");
         System.out.println("Temperature: " + temp + " Humidity: " + hum);
 
-        if (temp > 80) {
+        if (hum > 80) {
             publishMessage(MQTTprogram.sampleClient, "cmnd/grp7719/Power1", "1 ");
         } else {
             publishMessage(MQTTprogram.sampleClient, "cmnd/grp7719/Power1", "0");
