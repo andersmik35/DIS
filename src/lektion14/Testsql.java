@@ -14,13 +14,15 @@ public class Testsql {
             minConnection =
                     DriverManager.getConnection("jdbc:sqlserver://localhost\\SQLEXPRESS;" +
                             "databaseName=lektion14;user=sa;password=123;");
+            minConnection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ); // Slå auto-commit fra
+
             Scanner scanner = new Scanner(System.in);
 
-            //Indlæs frakonto
+            // Indlæs frakonto
             System.out.println("Indtast frakonto");
             int frakonto = scanner.nextInt();
 
-            //Indlæs tilkonto
+            // Indlæs tilkonto
             System.out.println("Indtast tilkonto");
             int tilkonto = scanner.nextInt();
 
@@ -30,6 +32,9 @@ public class Testsql {
 
             // Check at frakonto eksisterer og find saldoen
             double fraKontoSaldo = findSaldo(frakonto);
+
+            minConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
 
             if (fraKontoSaldo < beloeb) {
                 System.out.println("Der er ikke nok penge på kontoen");
@@ -41,13 +46,25 @@ public class Testsql {
                     double nyFraKontoSaldo = fraKontoSaldo - beloeb;
                     double nyTilKontoSaldo = tilKontoSaldo + beloeb;
 
-                    // Opdater frakonto med den nye saldo
-                    opdaterSaldo(frakonto, nyFraKontoSaldo);
+                    // Start transaktion
+                    minConnection.setAutoCommit(false);
 
-                    // Opdater tilkonto med den nye saldo
-                    opdaterSaldo(tilkonto, nyTilKontoSaldo);
+                    try {
+                        // Opdater frakonto med den nye saldo
+                        opdaterSaldo(frakonto, nyFraKontoSaldo);
 
-                    System.out.println("Pengeoverførsel gennemført.");
+                        // Opdater tilkonto med den nye saldo
+                        opdaterSaldo(tilkonto, nyTilKontoSaldo);
+
+                        // Commit transaktionen
+                        minConnection.commit();
+
+                        System.out.println("Pengeoverførsel gennemført.");
+                    } catch (SQLException e) {
+                        // Hvis der opstår en fejl, rul tilbage transaktionen
+                        minConnection.rollback();
+                        System.out.println("Transaktionen blev rullet tilbage på grund af en fejl: " + e.getMessage());
+                    }
                 } else {
                     System.out.println("Tilkonto eksisterer ikke.");
                 }
@@ -58,6 +75,7 @@ public class Testsql {
             System.out.println("fejl:  " + e.getMessage());
         }
     }
+
     private static double findSaldo(int kontoNummer) throws SQLException {
         String query = "select saldo, kontonr from konto where kontonr = ?";
         PreparedStatement stmt = minConnection.prepareStatement(query);
@@ -65,7 +83,7 @@ public class Testsql {
         ResultSet result = stmt.executeQuery();
 
         if (result.next()) {
-            return result.getInt("saldo");
+            return result.getDouble("saldo");
         } else {
             return -1;
         }
@@ -76,8 +94,13 @@ public class Testsql {
         PreparedStatement stmt = minConnection.prepareStatement(query);
         stmt.setDouble(1, nySaldo);
         stmt.setInt(2, kontoNummer);
-        stmt.executeUpdate();
+        int rowsAffected = stmt.executeUpdate();
+        if (rowsAffected > 0) {
+            System.out.println("Saldoen på konto " + kontoNummer + " er blevet opdateret til " + nySaldo);
+        } else {
+            System.out.println("Opdatering mislykkedes for konto " + kontoNummer);
+        }
     }
-
 }
+
 
